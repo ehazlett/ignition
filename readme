@@ -7,6 +7,15 @@ the Python project (currently only Django), a uWSGI start script, and
 a config file to launch Nginx as the frontend.  It will also create startup
 and shutdown sample scripts for launching the stack.
 
+Installation:
+
+$ pip install ignition
+
+Or (manually): 
+
+Clone/download
+$ python setup.py install
+
 Example:
 
 To create a Django project called 'helloworld' listening on port 80, running under the user 'nginx', and located in /srv/projects:
