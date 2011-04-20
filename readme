@@ -1,0 +1,22 @@
+:: Ignition ::
+
+Python web application creator
+
+Ignition is a stack creator for Python web applications.  It will create
+the Python project (currently only Django), a uWSGI start script, and 
+a config file to launch Nginx as the frontend.  It will also create startup
+and shutdown sample scripts for launching the stack.
+
+Example:
+
+To create a Django project called 'helloworld' listening on port 80, running under the user 'nginx', and located in /srv/projects:
+
+./ignite.py -d /srv/projects -n helloworld -u nginx -p 80 -t django
+
+You can then 'cd' into /srv/projects/scripts and run:
+
+sudo ./helloworld_start.sh
+
+Visit http://localhost in your web browser and you should see the standard 'It works!' Django page.
+
+
