@@ -20,7 +20,7 @@ Example:
 
 To create a Django project called 'helloworld' listening on port 80, running under the user 'nginx', and located in /srv/projects:
 
-$ ./ignite.py -d /srv/projects -n helloworld -u nginx -p 80 -t django
+$ ignite.py -d /srv/projects -n helloworld -u nginx -p 80 -t django
 
 
 Make sure to set permissions for the user it's running under, in this case 'nginx':
