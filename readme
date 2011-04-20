@@ -1,6 +1,6 @@
 :: Ignition ::
 
-Python web application creator
+Python web application stack creator (Python + uWSGI + Nginx)
 
 Ignition is a stack creator for Python web applications.  It will create
 the Python project (currently only Django), a uWSGI start script, and 
