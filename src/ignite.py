@@ -62,7 +62,6 @@ if __name__ == '__main__':
     op.add_option('-t', '--template', dest='template', help='Project template (run --list-templates for available templates)')
     op.add_option('--list-templates', dest='list_templates', action='store_true', default=False, help='List available templates')
     op.add_option('--force', dest='force', action='store_true', default=False, help='Force creation (overwrites existing)')
-    op.add_option('--run-tests', dest='run_tests', action='store_true', default=False, help='Run built-in unit tests')
 
     opts, args = op.parse_args()
 

@@ -95,7 +95,7 @@ class ProjectCreator(object):
         if os.path.exists(uwsgi_params):
             shutil.copy(uwsgi_params, self._conf_dir)
         else:
-            logging.error('Unable to find Nginx uwsgi_params ; you must manually copy this to {0}'.format(self._conf_dir))
+            logging.error('Unable to find Nginx uwsgi_params.  You must manually copy this to {0}.'.format(self._conf_dir))
 
         # copy mime.types for nginx
         mime_types = '/etc/nginx/mime.types'
@@ -103,7 +103,7 @@ class ProjectCreator(object):
             shutil.copy(mime_types, self._conf_dir)
             self._include_mimetypes = True
         else:
-            logging.warn('Unable to find mime.types for Nginx')
+            logging.warn('Unable to find mime.types for Nginx.  You must manually copy this to {0}.'.format(self._conf_dir))
 
     def create_virtualenv(self):
         if check_command('virtualenv'):
