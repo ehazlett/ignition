@@ -15,6 +15,7 @@
 
 import logging
 import commands
+import os
 
 def check_command(command):
     cmd = commands.getoutput('which {0}'.format(command))
@@ -23,4 +24,36 @@ def check_command(command):
         return False
     else:
         return True
+
+def add_static_dir(root_dir=None, project_name=None, static_dir_path=None, alias=None):
+    log = logging.getLogger('common')
+    conf_file = os.path.join(root_dir, 'conf' + os.sep + '{0}_nginx.conf'.format(project_name))
+    if not os.path.exists(conf_file):
+        log.error('Unable to find config file: {0}.  Please check root directory and project name'.format(conf_file))
+        return
+    log.info('Creating static directory alias')
+    f = open(conf_file, 'r')
+    cfg = f.readlines()
+    f.close()
+    new_cfg = ''
+    location_found = False
+    alias_added = False
+    for l in cfg:
+        if l.find('location') > -1:
+            location_found = True
+            new_cfg += l
+        elif location_found and l.find('}') > -1 and not alias_added:
+            # end of location found ; add alias
+            new_cfg += l
+            alias = '\t\tlocation {0} {{\n'.format(alias)
+            alias += '\t\t\talias {0};\n'.format(static_dir_path)
+            alias += '\t\t}\n'
+            new_cfg += alias
+            location_found = False
+            alias_added = True
+        else:
+            new_cfg += l
+    f = open(conf_file, 'w')
+    f.write(new_cfg)
+    f.close()
 

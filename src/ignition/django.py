@@ -17,6 +17,7 @@ import os
 import logging
 import subprocess
 import commands
+import shutil
 from ignition.common import check_command
 from ignition import ProjectCreator
 
