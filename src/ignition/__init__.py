@@ -200,7 +200,7 @@ os.path.join(self._var_dir, self._project_name))
         # stop nginx
         stop += 'if [ -e {0}_nginx.pid ]; then nginx -c {1}_nginx.conf -s stop ; fi\n'.format(os.path.join(self._var_dir, self._project_name), os.path.join(self._conf_dir, self._project_name))
         # stop uwsgi
-        stop += 'if [ -e {0}_uwsgi.pid ]; then kill -HUP `cat {0}_uwsgi.pid` ; rm {0}_uwsgi.pid 2>&1 > /dev/null ; fi\n'.format(os.path.join(self._var_dir, self._project_name))
+        stop += 'if [ -e {0}_uwsgi.pid ]; then kill -9 `cat {0}_uwsgi.pid` ; rm {0}_uwsgi.pid 2>&1 > /dev/null ; fi\n'.format(os.path.join(self._var_dir, self._project_name))
         stop += 'echo \'{0} stopped\'\n'.format(self._project_name)
 
         # write scripts
