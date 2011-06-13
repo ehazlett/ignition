@@ -37,6 +37,7 @@ class ProjectCreator(object):
         self._var_dir = os.path.join(self._root_dir, 'var')
         self._log_dir = os.path.join(self._root_dir, 'log')
         self._script_dir = os.path.join(self._root_dir, 'scripts')
+        self._nginx_config = '{0}_nginx.conf'.format(os.path.join(self._conf_dir, self._project_name))
         self._modules = modules
         self._include_mimetypes = False
         if 'user' in kwargs:
@@ -70,6 +71,33 @@ class ProjectCreator(object):
         # check directories
         self.check_directories()
 
+    # accessors
+    def get_project_name(self):
+        return self._project_name
+
+    def get_nginx_config(self):
+        """
+        Gets the Nginx config for the project
+
+        """
+        if os.path.exists(self._nginx_config):
+            return open(self._nginx_config, 'r').read()
+        else:
+            return None
+
+    def get_root_dir(self):
+        return self._root_dir
+
+    def get_ve_dir(self):
+        return self._ve_dir
+
+    def get_django_dir(self):
+        return self._django_dir
+
+    def get_nginx_dir(self):
+        return self._nginx_dir
+
+
     def check_directories(self):
         '''
         Creates base directories for Django, virtualenv, and nginx
@@ -95,7 +123,7 @@ class ProjectCreator(object):
         if os.path.exists(uwsgi_params):
             shutil.copy(uwsgi_params, self._conf_dir)
         else:
-            logging.error('Unable to find Nginx uwsgi_params.  You must manually copy this to {0}.'.format(self._conf_dir))
+            logging.warning('Unable to find Nginx uwsgi_params.  You must manually copy this to {0}.'.format(self._conf_dir))
 
         # copy mime.types for nginx
         mime_types = '/etc/nginx/mime.types'
@@ -177,8 +205,7 @@ os.path.join(self._var_dir, self._project_name))
         cfg += '}\n'
 
         # create conf
-        nginx_conf = '{0}_nginx.conf'.format(os.path.join(self._conf_dir, self._project_name))
-        f = open(nginx_conf, 'w')
+        f = open(self._nginx_config, 'w')
         f.write(cfg)
         f.close()
 

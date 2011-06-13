@@ -5,7 +5,10 @@ import shutil
 import unittest
 import commands
 from ignition import ProjectCreator
+from ignition import common
 from ignition.django import DjangoCreator
+from random import Random
+import string
 
 class ProjectCreatorTestCase(unittest.TestCase):
     def setUp(self):
@@ -40,7 +43,19 @@ class ProjectCreatorTestCase(unittest.TestCase):
         f.close()
         # search config for project_name -- not the best validation, but some
         self.assertTrue(cfg.find(self.prj._project_name) > -1)
-    
+
+    def testAddStaticNginxDir(self):
+        self.prj.create_nginx_config()
+        nginx_config = self.prj.get_nginx_config()
+        self.assertIsNotNone(nginx_config)
+        # generate a random static dir to add to config
+        vdir = ''.join(Random().sample(string.letters, 5))
+        common.add_static_dir(root_dir=self.prj.get_root_dir(), project_name=self.prj.get_project_name(),\
+            static_dir_path='/tmp', alias=vdir)
+        nginx_config = self.prj.get_nginx_config()
+        self.assertTrue(nginx_config.find(vdir) > -1)
+        
+
     def testCreateManageScripts(self):
         self.prj.create_manage_scripts()
         self.assertTrue(os.path.exists('{0}_start.sh'.format(os.path.join(self.prj._script_dir, self.prj._project_name))))
