@@ -43,6 +43,21 @@ class ProjectCreatorTestCase(unittest.TestCase):
         f.close()
         # search config for project_name -- not the best validation, but some
         self.assertTrue(cfg.find(self.prj._project_name) > -1)
+        # search for 'http' section (standalone hosting
+        self.assertTrue(cfg.find('http {') > -1)
+        os.remove(nginx_conf)
+        # create project with shared hosting
+        self.prj = ProjectCreator(root_dir=self.root_dir, project_name=self.project_name, modules=self.modules, shared_hosting=True)
+        self.prj.create_nginx_config()
+        nginx_conf = os.path.join(self.prj._conf_dir, '{0}_nginx.conf'.format(self.prj._project_name))
+        self.assertTrue(os.path.exists(nginx_conf))
+        f = open(nginx_conf, 'r')
+        cfg = f.read()
+        f.close()
+        # search config for project_name -- not the best validation, but some
+        self.assertTrue(cfg.find(self.prj._project_name) > -1)
+        # search for 'http' section (standalone hosting
+        self.assertTrue(cfg.find('http {') == -1)
 
     def testAddStaticNginxDir(self):
         self.prj.create_nginx_config()

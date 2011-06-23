@@ -9,6 +9,7 @@ import logging
 import unittest
 import tempfile
 import shutil
+import ignition
 from ignition.django import DjangoCreator
 import ignition.common
 
@@ -45,7 +46,7 @@ def main(opts=None):
     template = opts.template.lower()
     if template == 'django':
         prj = DjangoCreator(project_name=project_name, root_dir=root_dir,\
-modules=modules, user=user, port=port, force=force)
+modules=modules, user=user, port=port, force=force, shared_hosting=opts.shared_hosting)
     else:
         logging.error('Unknown template')
         sys.exit(1)
@@ -60,12 +61,15 @@ if __name__ == '__main__':
     op.add_option('-n', '--name', dest='project_name', help='Name of project')
     op.add_option('-m', '--modules', dest='modules', help='Comma separated list of Virtualenv packages')
     op.add_option('-u', '--user', dest='user', help='User account to run Django application under')
-    op.add_option('-p', '--port', dest='port', help='Port for webserver to listen on')
+    op.add_option('-p', '--port', dest='port', default=80, help='Port for webserver to listen on')
+    op.add_option('--shared-hosting', dest='shared_hosting', action='store_true', default=False,\
+        help='Create a shared hosted Nginx config (allow multiple apps on a single port)')
+    op.add_option('-v', '--version', dest='show_version', action='store_true', default=False, help='Show version and exit')
     op.add_option('-t', '--template', dest='template', help='Project template (run --list-templates for available templates)')
     op.add_option('--list-templates', dest='list_templates', action='store_true', default=False, help='List available templates')
     op.add_option('--force', dest='force', action='store_true', default=False, help='Force creation (overwrites existing)')
-    op.add_option('--add-static-dir', dest='add_static_dir', help='Add a static directory to nging config (format is \
---add-static-dir <full_path_to_dir>:<alias> - i.e. --add-static-dir /srv/www/app/static:/static')
+    op.add_option('--add-static-dir', dest='add_static_dir', help='Add a static directory to nging config (format is '\
+        '--add-static-dir <full_path_to_dir>:<alias> - i.e. --add-static-dir /srv/www/app/static:/static')
 
     opts, args = op.parse_args()
 
@@ -74,6 +78,11 @@ if __name__ == '__main__':
         templates = PROJECT_TEMPLATES
         print('Available templates:')
         print(''.join([' ' + x + '\n' for x in templates]))
+        sys.exit(0)
+
+    # show version
+    if opts.show_version:
+        print(':: Ignition :: version {0}'.format(ignition.__VERSION__))
         sys.exit(0)
 
     # check for add-static-dir

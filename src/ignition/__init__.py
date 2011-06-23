@@ -20,6 +20,9 @@ import shutil
 import commands
 from ignition.common import check_command
 
+__AUTHOR__ = 'Evan Hazlett <ejhazlett@gmail.com>'
+__VERSION__ = '0.2'
+
 class ProjectCreator(object):
     '''
     Base creator for all projects
@@ -56,6 +59,10 @@ class ProjectCreator(object):
             self._force = kwargs['force']
         else:
             self._force = False
+        if 'shared_hosting' in kwargs:
+            self._shared_hosting = kwargs['shared_hosting']
+        else:
+            self._shared_hosting = False
         # check for extra modules
         if self._modules == None:
             self._modules = []
@@ -161,27 +168,28 @@ class ProjectCreator(object):
 
     def create_nginx_config(self):
         cfg = '# nginx config for {0}\n'.format(self._project_name)
-        # user
-        if self._user:
-            cfg += 'user {0};\n'.format(self._user)
-        # misc nginx config
-        cfg += 'worker_processes 1;\nerror_log {0}-errors.log;\n\
-pid {1}_nginx.pid;\n\n'.format(os.path.join(self._log_dir, \
-self._project_name), os.path.join(self._var_dir, self._project_name))
-        cfg += 'events {\n\tworker_connections 32;\n}\n\n'
-        # http section
-        cfg += 'http {\n'
-        if self._include_mimetypes:
-            cfg += '\tinclude mime.types;\n'
-        cfg += '\tdefault_type application/octet-stream;\n'
-        cfg += '\tclient_max_body_size 1G;\n'
-        cfg += '\tproxy_max_temp_file_size 0;\n'
-        cfg += '\tproxy_buffering off;\n'
-        cfg += '\taccess_log {0}-access.log;\n'.format(os.path.join \
-(self._log_dir, self._project_name))
-        cfg += '\tsendfile on;\n'
-        cfg += '\tkeepalive_timeout 65;\n'
-        # server section
+        if not self._shared_hosting:
+            # user
+            if self._user:
+                cfg += 'user {0};\n'.format(self._user)
+            # misc nginx config
+            cfg += 'worker_processes 1;\nerror_log {0}-errors.log;\n\
+pid {1}_    nginx.pid;\n\n'.format(os.path.join(self._log_dir, \
+                self._project_name), os.path.join(self._var_dir, self._project_name))
+            cfg += 'events {\n\tworker_connections 32;\n}\n\n'
+            # http section
+            cfg += 'http {\n'
+            if self._include_mimetypes:
+                cfg += '\tinclude mime.types;\n'
+            cfg += '\tdefault_type application/octet-stream;\n'
+            cfg += '\tclient_max_body_size 1G;\n'
+            cfg += '\tproxy_max_temp_file_size 0;\n'
+            cfg += '\tproxy_buffering off;\n'
+            cfg += '\taccess_log {0}-access.log;\n'.format(os.path.join \
+                (self._log_dir, self._project_name))
+            cfg += '\tsendfile on;\n'
+            cfg += '\tkeepalive_timeout 65;\n'
+            # server section
         cfg += '\tserver {\n'
         cfg += '\t\tlisten 0.0.0.0:{0};\n'.format(self._port)
         if self._server_name:
@@ -189,7 +197,7 @@ self._project_name), os.path.join(self._var_dir, self._project_name))
         # location section
         cfg += '\t\tlocation / {\n'
         cfg += '\t\t\tuwsgi_pass unix:///{0}.sock;\n'.format(\
-os.path.join(self._var_dir, self._project_name))
+            os.path.join(self._var_dir, self._project_name))
         cfg += '\t\t\tinclude uwsgi_params;\n'
         cfg += '\t\t}\n\n'
         # end location
@@ -201,8 +209,9 @@ os.path.join(self._var_dir, self._project_name))
         cfg += '\t\t}\n'
         # end server section
         cfg += '\t}\n'
-        # end http section
-        cfg += '}\n'
+        if not self._shared_hosting:
+            # end http section
+            cfg += '}\n'
 
         # create conf
         f = open(self._nginx_config, 'w')
