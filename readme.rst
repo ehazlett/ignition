@@ -14,7 +14,7 @@ Installation::
 
 Or (manually): 
 
-Clone/download::
+Clone/download then::
     
     $ python setup.py install
 
