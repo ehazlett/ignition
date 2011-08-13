@@ -20,22 +20,21 @@ import shutil
 import commands
 from ignition.common import check_command
 
-__AUTHOR__ = 'Evan Hazlett <ejhazlett@gmail.com>'
-__VERSION__ = '0.2'
+__author__ = 'Evan Hazlett <ejhazlett@gmail.com>'
+__version__ = '0.3'
 
 class ProjectCreator(object):
-    '''
-    Base creator for all projects
-    '''
     def __init__(self, project_name=None, root_dir=os.getcwd(), modules=[], **kwargs):
+        '''
+        Base creator for all projects
+        '''
         if not project_name:
             print_error('You must specify a project name')
             return
         self._project_name = project_name
         self._root_dir = root_dir
         self._ve_dir = os.path.join(self._root_dir, 've')
-        self._django_dir = os.path.join(self._root_dir, 'django')
-        self._nginx_dir = os.path.join(self._root_dir, 'nginx')
+        self._app_dir = os.path.join(self._root_dir, 'app')
         self._conf_dir = os.path.join(self._root_dir, 'conf')
         self._var_dir = os.path.join(self._root_dir, 'var')
         self._log_dir = os.path.join(self._root_dir, 'log')
@@ -80,6 +79,10 @@ class ProjectCreator(object):
 
     # accessors
     def get_project_name(self):
+        """
+        Returns the name of the project
+
+        """
         return self._project_name
 
     def get_nginx_config(self):
@@ -93,29 +96,32 @@ class ProjectCreator(object):
             return None
 
     def get_root_dir(self):
+        """
+        Returns the path to the base project directory
+        
+        """
         return self._root_dir
 
     def get_ve_dir(self):
+        """
+        Returns the path to the virtualenv
+
+        """
         return self._ve_dir
 
-    def get_django_dir(self):
-        return self._django_dir
-
-    def get_nginx_dir(self):
-        return self._nginx_dir
-
+    def get_app_dir(self):
+        return self._app_dir
 
     def check_directories(self):
-        '''
-        Creates base directories for Django, virtualenv, and nginx
-        ''' 
+        """
+        Creates base directories for app, virtualenv, and nginx
+
+        """
         self.log.debug('Checking directories')
         if not os.path.exists(self._ve_dir):
             os.makedirs(self._ve_dir)
-        if not os.path.exists(self._django_dir):
-            os.makedirs(self._django_dir)
-        if not os.path.exists(self._nginx_dir):
-            os.makedirs(self._nginx_dir)
+        if not os.path.exists(self._app_dir):
+            os.makedirs(self._app_dir)
         if not os.path.exists(self._conf_dir):
             os.makedirs(self._conf_dir)
         if not os.path.exists(self._var_dir):
@@ -141,6 +147,10 @@ class ProjectCreator(object):
             logging.warn('Unable to find mime.types for Nginx.  You must manually copy this to {0}.'.format(self._conf_dir))
 
     def create_virtualenv(self):
+        """
+        Creates the virtualenv for the project
+        
+        """
         if check_command('virtualenv'):
             ve_dir = os.path.join(self._ve_dir, self._project_name)
             if os.path.exists(ve_dir):
@@ -167,6 +177,10 @@ class ProjectCreator(object):
         logging.error('Not yet implemented')
 
     def create_nginx_config(self):
+        """
+        Creates the Nginx configuration for the project
+
+        """
         cfg = '# nginx config for {0}\n'.format(self._project_name)
         if not self._shared_hosting:
             # user
@@ -219,6 +233,10 @@ pid {1}_    nginx.pid;\n\n'.format(os.path.join(self._log_dir, \
         f.close()
 
     def create_manage_scripts(self):
+        """
+        Creates scripts to start and stop the application
+
+        """
         # create start script
         start = '# start script for {0}\n\n'.format(self._project_name)
         # start uwsgi
@@ -253,12 +271,13 @@ pid {1}_    nginx.pid;\n\n'.format(os.path.join(self._log_dir, \
         os.chmod(stop_file, 0754)
 
     def create(self):
-        '''
+        """
         Creates the full project
-        '''
+
+        """
         # create virtualenv
         self.create_virtualenv()
-        # create django project
+        # create project
         self.create_project()
         # generate uwsgi script
         self.create_uwsgi_script()
@@ -266,6 +285,5 @@ pid {1}_    nginx.pid;\n\n'.format(os.path.join(self._log_dir, \
         self.create_nginx_config()
         # generate management scripts
         self.create_manage_scripts()
-
         logging.info('** Make sure to set proper permissions for the webserver user account on the var and log directories in the project root')
 

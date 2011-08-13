@@ -21,25 +21,31 @@ import shutil
 from ignition.common import check_command
 from ignition import ProjectCreator
 
-class DjangoCreator(ProjectCreator):
-    '''
-    Handles creating Django projects
-    '''
+class FlaskCreator(ProjectCreator):
     def __init__(self, project_name=None, root_dir=os.getcwd(), modules=[], **kwargs):
+        """
+        Handles creating Flask projects
+
+        :keyword project_name: Name of project to create or edit
+        :keyword root_dir: Base directory where projects are stored
+        :keyword modules: List of Python modules to install into virtualenv (uses PIP)
+
+        """
         ProjectCreator.__init__(self, project_name, root_dir, modules, **kwargs)
-        self.log = logging.getLogger('DjangoCreator')
-        # add Django
-        django_found = False
+        self.log = logging.getLogger('FlaskCreator')
+        # add Flask
+        flask_found = False
         for m in self._modules:
-            if m.find('django') > -1:
-                django_found = True
-        if not django_found:
-            self._modules.append('django')
+            if m.find('flask') > -1:
+                flask_found = True
+        if not flask_found:
+            self._modules.append('flask')
 
     def create_project(self):
-        '''
-        Creates a base Django project
-        '''
+        """
+        Creates a base Flask project
+
+        """
         if os.path.exists(self._py):
             prj_dir = os.path.join(self._app_dir, self._project_name)
             if os.path.exists(prj_dir):
@@ -50,10 +56,18 @@ class DjangoCreator(ProjectCreator):
                     logging.warn('Found existing project; not creating (use --force to overwrite)')
                     return
             logging.info('Creating project')
-            p = subprocess.Popen('cd {0} ; {1} startproject {2} > /dev/null'.format(self._app_dir, self._ve_dir + os.sep + self._project_name + \
-            os.sep + 'bin' + os.sep + 'django-admin.py', self._project_name), \
-            shell=True)
-            os.waitpid(p.pid, 0)
+            os.makedirs(prj_dir)
+            # create the flask project stub
+            app = """#!/usr/bin/env python\n"""\
+            """from flask import Flask\n"""\
+            """app = Flask(__name__)\n\n"""\
+            """@app.route(\"/\")\n"""\
+            """def hello():\n"""\
+            """    return \"Hello from Flask...\"\n\n"""\
+            """if __name__==\"__main__\":\n"""\
+            """    app.run()\n\n"""
+            with open(os.path.join(prj_dir, 'app.py'), 'w') as f:
+                f.write(app)
         else:
             logging.error('Unable to find Python interpreter in virtualenv')
             return
@@ -74,16 +88,14 @@ class DjangoCreator(ProjectCreator):
         scr += '--chdir {0} '.format(os.path.join(self._app_dir, self._project_name))
         scr += '--pp {0} '.format(os.path.join(self._app_dir))
         # app settings
-        scr += '--env DJANGO_SETTINGS_MODULE=settings -w \
-\"django.core.handlers.wsgi:WSGIHandler()\" '
+        scr += '-w app:app '
         # uwsgi settings
-        scr += '--pidfile {0}/{1}_uwsgi.pid -d {2}/{1}_uwsgi.log '\
-            .format(self._var_dir, self._project_name, self._log_dir)
+        scr += '--pidfile {0}/{1}_uwsgi.pid -d {2}/{1}_uwsgi.log '.format(\
+            self._var_dir, self._project_name, self._log_dir)
         # misc
         scr += '--no-orphans --vacuum -M --chmod-socket 664 \
 --harakiri 300 --max-requests 5000 --limit-as 160 \
 --post-buffering 16777216 '
-        
         # write config
         uwsgi_file = os.path.join(self._conf_dir, '{0}.uwsgi'.format(self._project_name))
         f = open(uwsgi_file, 'w')

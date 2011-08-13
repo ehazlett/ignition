@@ -7,6 +7,7 @@ import commands
 from ignition import ProjectCreator
 from ignition import common
 from ignition.django import DjangoCreator
+from ignition.flask import FlaskCreator
 from random import Random
 import string
 
@@ -76,23 +77,31 @@ class ProjectCreatorTestCase(unittest.TestCase):
         self.assertTrue(os.path.exists('{0}_start.sh'.format(os.path.join(self.prj._script_dir, self.prj._project_name))))
         self.assertTrue(os.path.exists('{0}_stop.sh'.format(os.path.join(self.prj._script_dir, self.prj._project_name))))
 
-class DjangoCreatorTestCase(unittest.TestCase):
+class ProjectCreatorTestCase(unittest.TestCase):
     def setUp(self):
         self.root_dir = tempfile.mkdtemp()
         self.project_name = 'testproject'
         self.modules = []
-        self.prj = DjangoCreator(root_dir=self.root_dir, project_name=self.project_name, modules=self.modules)
 
     def tearDown(self):
         if os.path.exists(self.root_dir):
             shutil.rmtree(self.root_dir)
     
-    def testCreateProject(self):
+    def testCreateDjangoProject(self):
+        self.prj = DjangoCreator(root_dir=self.root_dir, project_name=self.project_name, modules=self.modules)
         self.prj.create_virtualenv()
-        self.assertTrue(os.path.exists(os.path.join(self.prj._django_dir)))
+        self.assertTrue(os.path.exists(os.path.join(self.prj._app_dir)))
         self.prj.create_project()
-        self.assertTrue(os.path.exists(os.path.join(self.prj._django_dir, \
-        self.project_name) + os.sep + 'manage.py'))
+        self.assertTrue(os.path.exists(os.path.join(self.prj._app_dir, \
+            self.project_name) + os.sep + 'manage.py'))
+
+    def testCreateFlaskProject(self):
+        self.prj = FlaskCreator(root_dir=self.root_dir, project_name=self.project_name, modules=self.modules)
+        self.prj.create_virtualenv()
+        self.assertTrue(os.path.exists(os.path.join(self.prj._app_dir)))
+        self.prj.create_project()
+        self.assertTrue(os.path.exists(os.path.join(self.prj._app_dir, \
+            self.project_name) + os.sep + 'app.py'))
 
 if __name__=='__main__':
     unittest.main()

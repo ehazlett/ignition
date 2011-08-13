@@ -3,7 +3,7 @@
 from distutils.core import setup
 
 setup(name='ignition',
-    version = '0.2',
+    version = '0.3',
     author = 'Evan Hazlett',
     author_email = 'ejhazlett@gmail.com',
     packages = ['ignition'],

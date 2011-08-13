@@ -11,10 +11,12 @@ import tempfile
 import shutil
 import ignition
 from ignition.django import DjangoCreator
+from ignition.flask import FlaskCreator
 import ignition.common
 
 PROJECT_TEMPLATES = [
     'django',
+    'flask',
 ]
 
 # logging vars
@@ -44,11 +46,16 @@ def main(opts=None):
     force = opts.force
     # select template
     template = opts.template.lower()
-    if template == 'django':
-        prj = DjangoCreator(project_name=project_name, root_dir=root_dir,\
-modules=modules, user=user, port=port, force=force, shared_hosting=opts.shared_hosting)
-    else:
-        logging.error('Unknown template')
+    # try to load the template based upon the user input template
+    try:
+        f = globals()['{0}Creator'.format(template.capitalize())]
+        prj = f(project_name=project_name, root_dir=root_dir, \
+            modules=modules, user=user, port=port, force=force, \
+            shared_hosting=opts.shared_hosting)
+    except:
+        logging.error('Unknown template: {0}'.format(template))
+        print('\nAvailable templates: \n')
+        print(''.join([' ' + x + '\n' for x in PROJECT_TEMPLATES]))
         sys.exit(1)
     prj.create()
     logging.info('Project {0} created'.format(project_name))
